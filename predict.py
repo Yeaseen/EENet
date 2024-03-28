@@ -10,7 +10,7 @@ import torch
 import torch.nn.parallel
 import torch.optim
 
-from utils import accuracy, AverageMeter
+from utils.utils import accuracy, AverageMeter
 
 
 def validate(model, val_loader, criterion, args):
@@ -40,17 +40,19 @@ def validate(model, val_loader, criterion, args):
             if not isinstance(output, list):
                 output = [output]
 
-            loss = torch.zeros(0)
+            #loss = torch.zeros(0)
+            loss = torch.tensor(0.0, dtype=torch.float)
             for j in range(len(output)):
                 if 'bert' in model.__class__.__name__:
-                    loss += (j + 1) * criterion(output[j], target_var) / (args.num_exits * (args.num_exits + 1))
+                    loss += (j + 1) * criterion(output[j][0][0], target_var) / (args.num_exits * (args.num_exits + 1))
                 else:
-                    loss += criterion(output[j], target_var) / args.num_exits
-
+                    loss += criterion(output[j][0][0], target_var) / args.num_exits
+            
             losses.update(loss.item(), input.size(0))
 
             for j in range(len(output)):
-                prec1, prec5 = accuracy(output[j].data, target, topk=(1, 5))
+                relevant_output = output[j][0][0].detach()
+                prec1, prec5 = accuracy(relevant_output, target, topk=(1, 5))
                 top1[j].update(prec1.item(), input.size(0))
                 top5[j].update(prec5.item(), input.size(0))
 

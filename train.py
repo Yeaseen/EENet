@@ -54,7 +54,7 @@ def train(model, train_loader, criterion, optimizer, epoch, args, train_params):
 
         #the loss variable must be float type as it handles floating point values from the dataset
         loss = torch.tensor(0.0, dtype=torch.float)
-        print(f"Data type of loss: {loss.dtype}")
+        #print(f"Data type of loss: {loss.dtype}")
         for j in range(len(output)):
           #torch._C._nn.cross_entropy_loss function accepts a tensor.
           loss += (j + 1) * criterion(output[j][0][0], target_var) / (args.num_exits * (args.num_exits + 1))
@@ -67,7 +67,8 @@ def train(model, train_loader, criterion, optimizer, epoch, args, train_params):
 
         for j in range(len(output)):
             #tensor has data attribute
-            prec1, prec5 = accuracy(output[j][0][0], target, topk=(1, 5))
+            relevant_output = output[j][0][0].detach()
+            prec1, prec5 = accuracy(relevant_output, target, topk=(1, 5))
             top1[j].update(prec1.item(), input.size(0))
             top5[j].update(prec5.item(), input.size(0))
 
